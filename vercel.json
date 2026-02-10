@@ -9,5 +9,12 @@
       "src": "api/bfhl.js",
       "use": "@vercel/node"
     }
+  ],
+  "rewrites": [
+    { "source": "/", "destination": "/api/health" },
+    { "source": "/health", "destination": "/api/health" },
+    { "source": "/health/", "destination": "/api/health" },
+    { "source": "/bfhl", "destination": "/api/bfhl" },
+    { "source": "/bfhl/", "destination": "/api/bfhl" }
   ]
 }
