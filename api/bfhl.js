@@ -111,7 +111,19 @@ export default async function handler(req, res) {
             data: null
           });
         }
-        data = await askAI(body[key]);
+        try {
+          data = await askAI(body[key]);
+        } catch (e) {
+          // Log details for Vercel Runtime Logs without changing response shape.
+          const status = e?.response?.status;
+          const details = e?.response?.data || e?.message;
+          console.error("Gemini request failed", { status, details });
+          return res.status(502).json({
+            is_success: false,
+            official_email: OFFICIAL_EMAIL,
+            data: null
+          });
+        }
         break;
 
       default:
@@ -129,6 +141,7 @@ export default async function handler(req, res) {
     });
 
   } catch (err) {
+    console.error("Unhandled error in /bfhl", err?.message || err);
     return res.status(500).json({
       is_success: false,
       official_email: OFFICIAL_EMAIL,
@@ -179,8 +192,13 @@ function hcfArray(arr) {
 /* ---------- GEMINI ---------- */
 
 async function askAI(question) {
+  const apiKey = process.env.GEMINI_API_KEY;
+  const url =
+    "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent" +
+    `?key=${encodeURIComponent(apiKey)}`;
+
   const response = await axios.post(
-    "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent",
+    url,
     {
       contents: [
         {
@@ -197,7 +215,7 @@ async function askAI(question) {
         "Content-Type": "application/json",
         "x-goog-api-key": process.env.GEMINI_API_KEY
       },
-      timeout: 10000
+      timeout: 15000
     }
   );
 
