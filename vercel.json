@@ -1,15 +1,5 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "api/health.js",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "api/bfhl.js",
-      "use": "@vercel/node"
-    }
-  ],
   "rewrites": [
     { "source": "/", "destination": "/api/health" },
     { "source": "/health", "destination": "/api/health" },
