@@ -180,15 +180,24 @@ function hcfArray(arr) {
 
 async function askAI(question) {
   const response = await axios.post(
-    "https://generativelanguage.googleapis.com/v1alpha/models/gemini-2.0-flash:generateContent",
+    "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent",
     {
-      contents: [{ parts: [{ text: question }] }]
+      contents: [
+        {
+          parts: [
+            {
+              text: `${question}\n\nAnswer with exactly one word only. No punctuation, no extra words.`
+            }
+          ]
+        }
+      ]
     },
     {
       headers: {
         "Content-Type": "application/json",
         "x-goog-api-key": process.env.GEMINI_API_KEY
-      }
+      },
+      timeout: 10000
     }
   );
 
