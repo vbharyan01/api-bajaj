@@ -4,6 +4,23 @@ const OFFICIAL_EMAIL = "aryan0218.be23@chitkara.edu.in";
 
 export default async function handler(req, res) {
   try {
+    // Make the endpoint browser-friendly: opening the URL does a GET.
+    // The actual assignment logic remains POST-only.
+    if (req.method === "GET") {
+      return res.status(200).json({
+        is_success: true,
+        official_email: OFFICIAL_EMAIL,
+        message: "Use POST with a JSON body containing exactly one key: fibonacci | prime | lcm | hcf | AI.",
+        examples: {
+          fibonacci: { fibonacci: 7 },
+          prime: { prime: [1, 2, 3, 4, 5, 11] },
+          lcm: { lcm: [4, 6, 8] },
+          hcf: { hcf: [12, 18, 24] },
+          AI: { AI: "What is the capital of India?" }
+        }
+      });
+    }
+
     if (req.method !== "POST") {
       return res.status(405).json({
         is_success: false,
@@ -28,27 +45,72 @@ export default async function handler(req, res) {
 
     switch (key) {
       case "fibonacci":
-        if (!Number.isInteger(body[key]) || body[key] < 0) throw new Error();
+        if (!Number.isInteger(body[key]) || body[key] < 0) {
+          return res.status(400).json({
+            is_success: false,
+            official_email: OFFICIAL_EMAIL,
+            data: null
+          });
+        }
         data = fibonacci(body[key]);
         break;
 
       case "prime":
-        if (!Array.isArray(body[key])) throw new Error();
+        if (!Array.isArray(body[key])) {
+          return res.status(400).json({
+            is_success: false,
+            official_email: OFFICIAL_EMAIL,
+            data: null
+          });
+        }
         data = getPrimes(body[key]);
         break;
 
       case "lcm":
-        if (!Array.isArray(body[key]) || body[key].length === 0) throw new Error();
+        if (
+          !Array.isArray(body[key]) ||
+          body[key].length === 0 ||
+          !body[key].every((n) => Number.isInteger(n))
+        ) {
+          return res.status(400).json({
+            is_success: false,
+            official_email: OFFICIAL_EMAIL,
+            data: null
+          });
+        }
         data = lcmArray(body[key]);
         break;
 
       case "hcf":
-        if (!Array.isArray(body[key]) || body[key].length === 0) throw new Error();
+        if (
+          !Array.isArray(body[key]) ||
+          body[key].length === 0 ||
+          !body[key].every((n) => Number.isInteger(n))
+        ) {
+          return res.status(400).json({
+            is_success: false,
+            official_email: OFFICIAL_EMAIL,
+            data: null
+          });
+        }
         data = hcfArray(body[key]);
         break;
 
       case "AI":
-        if (typeof body[key] !== "string") throw new Error();
+        if (typeof body[key] !== "string" || body[key].trim().length === 0) {
+          return res.status(400).json({
+            is_success: false,
+            official_email: OFFICIAL_EMAIL,
+            data: null
+          });
+        }
+        if (!process.env.GEMINI_API_KEY) {
+          return res.status(500).json({
+            is_success: false,
+            official_email: OFFICIAL_EMAIL,
+            data: null
+          });
+        }
         data = await askAI(body[key]);
         break;
 
